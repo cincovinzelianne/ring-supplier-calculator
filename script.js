@@ -42,6 +42,8 @@ const D = {
 CATS.forEach(([v,t]) => $("gtype").add(new Option(t, v)));
 $("gtype").value = "uni";
 
+let latestResults = [];
+
 function calc() {
   const G = +$("gold").value || 0, S = +$("silver").value || 0, K = $("karat").value;
   const np = +$("np").value || 0, nw = +$("nw").value || 0, nm = +$("nm").value || 0;
@@ -56,6 +58,7 @@ function calc() {
     const ben = disc + don + off;
     return {d, gp, sp, goldTotal, silverTotal, gross, disc, don, off, ben, net: gross - ben};
   });
+  latestResults = out;
   const ok = out.filter(o => !o.na).sort((a, b) => a.net - b.net);
   const best = ok[0], worst = ok[ok.length - 1];
   const maxB = Math.max(...ok.map(o => o.ben), 1);
@@ -131,3 +134,97 @@ $("bm").innerHTML = `<thead><tr><th scope="col">Benefit</th>${Object.values(D).m
 
 document.querySelectorAll("input,select").forEach(e => e.addEventListener("input", () => { calc(); drawT(); }));
 calc(); drawT();
+
+const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+})[character]);
+
+function buildReport() {
+  const goldCount = +$("gold").value || 0;
+  const silverCount = +$("silver").value || 0;
+  const karat = $("karat").value;
+  const selectedCategory = CATS.find(([value]) => value === $("gtype").value) || ["", "Unspecified"];
+  const ringType = selectedCategory[1];
+  const presidents = +$("np").value || 0;
+  const women = +$("nw").value || 0;
+  const men = +$("nm").value || 0;
+  const ranked = latestResults.filter(result => !result.na).sort((a, b) => a.net - b.net);
+  const best = ranked[0];
+  const worst = ranked[ranked.length - 1];
+  const reportDate = new Intl.DateTimeFormat(undefined, {
+    year: "numeric", month: "long", day: "numeric"
+  }).format(new Date());
+  const reportTime = new Intl.DateTimeFormat(undefined, {
+    hour: "numeric", minute: "2-digit"
+  }).format(new Date());
+  const supplierHeaders = Object.values(D).map(supplier => `<th>${escapeHtml(supplier.name)}</th>`).join("");
+  const totalsRow = result => result.na ? ["N/A", "N/A", "N/A", "N/A", "N/A", "N/A"] : [
+    fm2(result.gross), fm2(result.disc), fm2(result.don), fm2(result.off), fm2(result.ben), fm2(result.net)
+  ];
+  const comparisonRows = latestResults.map(result =>
+    `<tr class="${result === best ? "report-best" : ""}"><th>${escapeHtml(result.d.name)}</th>${totalsRow(result).map(value => `<td class="report-number">${value}</td>`).join("")}</tr>`
+  ).join("");
+  const selectedGoldPrices = Object.values(D).map(supplier => supplier.p[selectedCategory[0]][karat]);
+  const lowestGoldPrice = Math.min(...selectedGoldPrices.filter(price => price != null));
+  const silverPrices = Object.values(D).map(supplier => supplier.p[SILVER_STD].s);
+  const lowestSilverPrice = Math.min(...silverPrices);
+  const selectedPrices = [
+    {label: `Gold ${karat}K · ${ringType}`, values: selectedGoldPrices, lowest: lowestGoldPrice},
+    {label: "Silver · Unisex (standard)", values: silverPrices, lowest: lowestSilverPrice}
+  ].map(({label, values, lowest}) =>
+    `<tr><th>${escapeHtml(label)}</th>${values.map(price => `<td class="report-number ${price === lowest ? "report-best" : ""}">${price == null ? "N/A" : fm2(price)}</td>`).join("")}</tr>`
+  ).join("");
+  const benefitRows = rows.map(row =>
+    `<tr><th>${escapeHtml(row[0])}</th>${row.slice(1).map(value => `<td>${value}</td>`).join("")}</tr>`
+  ).join("");
+  const winnerSummary = best
+    ? `<h2>${escapeHtml(best.d.name)}</h2><p>Lowest estimated net cost at <strong>${fm2(best.net)}</strong>${worst && worst !== best ? ` — ${fm2(worst.net - best.net)} less than ${escapeHtml(worst.d.name)}.` : "."}</p>`
+    : "<h2>No comparable supplier totals</h2><p>Check the selected ring options and quantities.</p>";
+  const savings = best && worst && worst !== best ? fm2(worst.net - best.net) : "—";
+  const report = $("printReport");
+  report.innerHTML = `
+    <header class="report-header">
+      <div><div class="report-brand">Supplier comparison · Class rings</div><h1>Supplier Cost Report</h1><p class="report-subtitle">A side-by-side estimate of group costs, ring prices, and supplier benefits.</p></div>
+      <div class="report-stamp">Prepared ${escapeHtml(reportDate)} · ${escapeHtml(reportTime)}</div>
+    </header>
+    <section class="report-summary"><div class="report-kicker">Cost recommendation</div>${winnerSummary}</section>
+    <div class="report-kpis">
+      <div class="report-kpi"><span>Lowest estimated total</span><strong>${best ? fm2(best.net) : "N/A"}</strong></div>
+      <div class="report-kpi"><span>Difference vs. highest</span><strong>${savings}</strong></div>
+      <div class="report-kpi"><span>Student ring orders</span><strong>${(goldCount + silverCount).toLocaleString()}</strong></div>
+    </div>
+    <section class="report-section"><h2>Group configuration</h2>
+      <div class="report-config">
+        <div><span>Gold student orders</span><strong>${goldCount.toLocaleString()}</strong></div>
+        <div><span>Silver student orders</span><strong>${silverCount.toLocaleString()}</strong></div>
+        <div><span>Gold karat &amp; style</span><strong>${escapeHtml(karat)}K · ${escapeHtml(ringType)}</strong></div>
+        <div><span>Silver ring style</span><strong>Unisex (standard)</strong></div>
+        <div><span>Presidents · premium</span><strong>${presidents.toLocaleString()}</strong></div>
+        <div><span>Women officers</span><strong>${women.toLocaleString()}</strong></div>
+        <div><span>Men officers</span><strong>${men.toLocaleString()}</strong></div>
+        <div><span>Total officer rings</span><strong>${(presidents + women + men).toLocaleString()}</strong></div>
+      </div>
+    </section>
+    <section class="report-section"><h2>Supplier cost comparison</h2>
+      <table class="report-table"><thead><tr><th>Supplier</th><th class="report-number">Gross total</th><th class="report-number">Cash discount</th><th class="report-number">Donation</th><th class="report-number">Officer rings</th><th class="report-number">Total benefits</th><th class="report-number">Net cost</th></tr></thead><tbody>${comparisonRows}</tbody></table>
+      <p class="report-note">Net cost = gross ring cost − cash discounts − donations − stated officer ring benefits. Suppliers without the selected gold karat are marked N/A.</p>
+    </section>
+    <section class="report-section"><h2>Selected ring price comparison</h2>
+      <table class="report-table"><thead><tr><th>Ring style and type</th>${supplierHeaders}</tr></thead><tbody>${selectedPrices}</tbody></table>
+      <p class="report-note">Lowest unit price per style is highlighted. Gold prices use the selected ${escapeHtml(karat)}K karat; silver prices are standardized to Unisex.</p>
+    </section>
+    <section class="report-section report-benefits"><h2>Benefits &amp; supplier policies</h2>
+      <table class="report-table"><thead><tr><th>Benefit / policy</th>${supplierHeaders}</tr></thead><tbody>${benefitRows}</tbody></table>
+      <p class="report-note">✓ Included · ✗ Not included · ? Not stated in supplier materials.</p>
+    </section>
+    <p class="report-note">Donation assumptions per ring — Suarez: gold ${fm2(+$("sg").value || 0)}, silver ${fm2(+$("ss").value || 0)}; R&amp;J: gold ${fm2(+$("rg").value || 0)}, silver ${fm2(+$("rs").value || 0)}. RNP donation assumptions are included in the calculator estimate.</p>
+    <footer class="report-footer">Prepared with the Class Ring Supplier Calculator. Estimates use the supplier details and assumptions currently entered; supplier prices and terms may change.</footer>`;
+  return report;
+}
+
+$("exportReport").addEventListener("click", () => {
+  const report = buildReport();
+  report.removeAttribute("aria-hidden");
+  window.addEventListener("afterprint", () => report.setAttribute("aria-hidden", "true"), {once: true});
+  window.print();
+});
