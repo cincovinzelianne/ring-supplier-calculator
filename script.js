@@ -1,4 +1,24 @@
 const $ = id => document.getElementById(id);
+const themeToggle = $("themeToggle");
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "light" || savedTheme === "dark") {
+  document.documentElement.dataset.theme = savedTheme;
+}
+const updateThemeToggle = () => {
+  const isDark = document.documentElement.dataset.theme === "dark" ||
+    (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+  themeToggle.textContent = `Switch to ${isDark ? "light" : "dark"} mode`;
+  themeToggle.setAttribute("aria-pressed", String(isDark));
+};
+themeToggle.addEventListener("click", () => {
+  const isDark = document.documentElement.dataset.theme === "dark" ||
+    (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+  const theme = isDark ? "light" : "dark";
+  document.documentElement.dataset.theme = theme;
+  localStorage.setItem("theme", theme);
+  updateThemeToggle();
+});
+updateThemeToggle();
 const fm = n => "₱" + Math.round(n).toLocaleString();
 const fm2 = n => "₱" + n.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const P = a => ({s: a[0], 8: a[1], 10: a[2], 12: a[3], 14: a[4], 18: a[5]});
