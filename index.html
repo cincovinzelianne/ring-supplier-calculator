@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Class Ring Supplier Analysis</title>
+<link rel="stylesheet" href="style.css">
+</head><body><div class="w">
+<h1>Class Ring Supplier Analysis/Calculator</h1>
+<p class="sub">This web dashboard is realy customize para lang sa analysis kung asa jud ang mas better option (By: Vinze Lianne)</p>
+<p class="sub">Suarez Brothers vs R&amp;J Jewelry vs RNP Jewelry — presyo, discounts, ug benefits para sa students ug officers.</p>
+
+<div class="card"><div class="grid">
+<div><label>Gold students availed</label><input id="gold" type="number" min="0" value="0"></div>
+<div><label>Silver students availed</label><input id="silver" type="number" min="0" value="700"></div>
+<div><label>Gold karat</label><select id="karat"><option value="8">8K</option><option value="10" selected>10K</option><option value="12">12K</option><option value="14">14K</option><option value="18">18K</option></select></div>
+<div><label>Gold ring type</label><select id="gtype"></select></div>
+<div><label>Silver ring type</label><input value="Unisex (standard)" disabled></div>
+<div><label>Presidents (premium)</label><input id="np" type="number" min="0" value="3"></div>
+<div><label>Women officers</label><input id="nw" type="number" min="0" value="6"></div>
+<div><label>Men officers</label><input id="nm" type="number" min="0" value="6"></div>
+</div>
+<details><summary>Assumptions: donation sa Suarez ug R&amp;J (wala gi-state sa sheets, default ₱0)</summary>
+<div class="grid" style="margin-top:8px">
+<div><label>Suarez – per gold</label><input id="sg" type="number" value="0"></div><div><label>Suarez – per silver</label><input id="ss" type="number" value="0"></div>
+<div><label>R&amp;J – per gold</label><input id="rg" type="number" value="0"></div><div><label>R&amp;J – per silver</label><input id="rs" type="number" value="0"></div>
+</div></details></div>
+
+<h2>Result (total para sa tibuok group)</h2>
+<div class="sup" id="res"></div>
+<p class="note" id="msg"></p>
+
+<h2>Price table</h2>
+<div class="tabs" id="tabs"></div>
+<div class="card scroll"><table id="pt"></table></div>
+<p class="note">Ang silver ring gi-standardize sa <b>Unisex</b> para sa tanang suppliers. Suarez wala’y 8K; ang ring types gi-map sa pinakaduol nga model (Petite=LS4 PT Oval, Ladies Std=LL4 PT Oval, Unisex=L4 ST Bar, Men’s Std=U4 Bar, Men’s Premium=M4 SR Bar). Ang R&amp;J “Ladies’ SR” gi-treat as Ladies Standard.</p>
+
+<h2>Benefits matrix</h2>
+<div class="card scroll"><table id="bm"></table></div>
+<p class="note"><span class="y">✓</span> naa · <span class="n">✗</span> wala · <span class="u">?</span> wala gi-state sa sheet (pangutan-a sa supplier). Ang mga presyo “subject to change”; R&amp;J mo-lock sa presyo kung 50% down payment.</p>
+<p class="sub">Shout out pres EJ Pakana sorry na late ug send hehe 😅😅</p>
+</div>
+<script src="script.js"></script>
+</body></html>
