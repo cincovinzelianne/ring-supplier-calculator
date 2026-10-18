@@ -1,45 +1,98 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
+<html lang="en">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Class Ring Supplier Analysis</title>
+<meta name="theme-color" content="#f5f4ef">
+<title>Class Ring Supplier Calculator</title>
 <link rel="stylesheet" href="style.css">
-</head><body><div class="w">
+</head>
+<body>
+<div class="w">
 <header class="page-header">
-<h1>Class Ring Supplier Analysis/Calculator</h1>
-<button id="themeToggle" class="theme-toggle" type="button" aria-pressed="false">Switch to dark mode</button>
+  <div class="brand"><span class="brand-mark" aria-hidden="true">R</span><span class="eyebrow">Supplier comparison</span></div>
+  <button id="themeToggle" class="theme-toggle" type="button" aria-pressed="false">Switch to dark mode</button>
 </header>
-<p class="sub">This web dashboard is realy customize para lang sa analysis kung asa jud ang mas better option (By: Vinze Lianne)</p>
-<p class="sub">Suarez Brothers vs R&amp;J Jewelry vs RNP Jewelry — presyo, discounts, ug benefits para sa students ug officers.</p>
 
-<div class="card"><div class="grid">
-<div><label>Gold students availed</label><input id="gold" type="number" min="0" value="0"></div>
-<div><label>Silver students availed</label><input id="silver" type="number" min="0" value="700"></div>
-<div><label>Gold karat</label><select id="karat"><option value="8">8K</option><option value="10" selected>10K</option><option value="12">12K</option><option value="14">14K</option><option value="18">18K</option></select></div>
-<div><label>Gold ring type</label><select id="gtype"></select></div>
-<div><label>Silver ring type</label><input value="Unisex (standard)" disabled></div>
-<div><label>Presidents (premium)</label><input id="np" type="number" min="0" value="3"></div>
-<div><label>Women officers</label><input id="nw" type="number" min="0" value="6"></div>
-<div><label>Men officers</label><input id="nm" type="number" min="0" value="6"></div>
-</div>
-<details><summary>Assumptions: donation sa Suarez ug R&amp;J (wala gi-state sa sheets, default ₱0)</summary>
-<div class="grid" style="margin-top:8px">
-<div><label>Suarez – per gold</label><input id="sg" type="number" value="0"></div><div><label>Suarez – per silver</label><input id="ss" type="number" value="0"></div>
-<div><label>R&amp;J – per gold</label><input id="rg" type="number" value="0"></div><div><label>R&amp;J – per silver</label><input id="rs" type="number" value="0"></div>
-</div></details></div>
+<section class="hero" aria-labelledby="page-title">
+  <div>
+    <h1 id="page-title">Class Ring Supplier Calculator</h1>
+    <p class="hero-copy">Compare total group costs, supplier benefits, and ring prices in one place.</p>
+  </div>
+  <span class="hero-caption">Suarez Brothers <span aria-hidden="true">·</span> R&amp;J Jewelry <span aria-hidden="true">·</span> RNP Jewelry</span>
+</section>
 
-<h2>Result (total para sa tibuok group)</h2>
-<div class="sup" id="res"></div>
-<p class="note" id="msg"></p>
+<section class="card inputs-panel" aria-labelledby="inputs-title">
+  <div class="section-heading">
+    <div><span class="section-kicker">01 / SETUP</span><h2 id="inputs-title">Group details</h2></div>
+    <p>Adjust quantities and ring options to update the comparison.</p>
+  </div>
+  <div class="form-sections">
+    <fieldset class="form-group">
+      <legend>Student orders</legend>
+      <div class="grid">
+        <div class="field"><label for="gold">Gold students</label><input id="gold" type="number" min="0" step="1" value="0"></div>
+        <div class="field"><label for="silver">Silver students</label><input id="silver" type="number" min="0" step="1" value="700"></div>
+      </div>
+    </fieldset>
+    <fieldset class="form-group">
+      <legend>Ring specifications</legend>
+      <div class="grid">
+        <div class="field"><label for="karat">Gold karat</label><select id="karat"><option value="8">8K</option><option value="10" selected>10K</option><option value="12">12K</option><option value="14">14K</option><option value="18">18K</option></select></div>
+        <div class="field"><label for="gtype">Gold ring style</label><select id="gtype"></select></div>
+        <div class="field"><label for="silverType">Silver ring style</label><input id="silverType" value="Unisex (standard)" disabled></div>
+      </div>
+    </fieldset>
+    <fieldset class="form-group">
+      <legend>Officer rings</legend>
+      <div class="grid">
+        <div class="field"><label for="np">Presidents · premium</label><input id="np" type="number" min="0" step="1" value="3"></div>
+        <div class="field"><label for="nw">Women officers</label><input id="nw" type="number" min="0" step="1" value="6"></div>
+        <div class="field"><label for="nm">Men officers</label><input id="nm" type="number" min="0" step="1" value="6"></div>
+      </div>
+    </fieldset>
+  </div>
+  <details class="assumptions">
+    <summary>Adjust donation assumptions <span>Suarez and R&amp;J default to ₱0</span></summary>
+    <div class="grid assumption-grid">
+      <div class="field"><label for="sg">Suarez · per gold ring</label><input id="sg" type="number" min="0" step="100" value="0"></div>
+      <div class="field"><label for="ss">Suarez · per silver ring</label><input id="ss" type="number" min="0" step="100" value="0"></div>
+      <div class="field"><label for="rg">R&amp;J · per gold ring</label><input id="rg" type="number" min="0" step="100" value="0"></div>
+      <div class="field"><label for="rs">R&amp;J · per silver ring</label><input id="rs" type="number" min="0" step="100" value="0"></div>
+    </div>
+  </details>
+</section>
 
-<h2>Price table</h2>
-<div class="tabs" id="tabs"></div>
-<div class="card scroll"><table id="pt"></table></div>
-<p class="note">Ang silver ring gi-standardize sa <b>Unisex</b> para sa tanang suppliers. Suarez wala’y 8K; ang ring types gi-map sa pinakaduol nga model (Petite=LS4 PT Oval, Ladies Std=LL4 PT Oval, Unisex=L4 ST Bar, Men’s Std=U4 Bar, Men’s Premium=M4 SR Bar). Ang R&amp;J “Ladies’ SR” gi-treat as Ladies Standard.</p>
+<section class="content-section" aria-labelledby="results-title">
+  <div class="section-heading">
+    <div><span class="section-kicker">02 / COMPARISON</span><h2 id="results-title">Supplier results</h2></div>
+    <p>Estimated net cost for the full group</p>
+  </div>
+  <div class="sup" id="res"></div>
+  <p class="note insight" id="msg" aria-live="polite"></p>
+</section>
 
-<h2>Benefits matrix</h2>
-<div class="card scroll"><table id="bm"></table></div>
-<p class="note"><span class="y">✓</span> naa · <span class="n">✗</span> wala · <span class="u">?</span> wala gi-state sa sheet (pangutan-a sa supplier). Ang mga presyo “subject to change”; R&amp;J mo-lock sa presyo kung 50% down payment.</p>
-<p class="sub">Shout out pres EJ Pakana sorry na late ug send hehe 😅😅</p>
+<section class="content-section" aria-labelledby="prices-title">
+  <div class="section-heading">
+    <div><span class="section-kicker">03 / PRICING</span><h2 id="prices-title">Ring price table</h2></div>
+    <p>Lowest price per style is highlighted.</p>
+  </div>
+  <div class="tabs" id="tabs" aria-label="Price table category"></div>
+  <div class="scroll"><table id="pt"></table></div>
+  <p class="note">Silver rings are standardized to Unisex across suppliers. Suarez has no 8K option; ring styles are matched to the closest available model (Petite=LS4 PT Oval, Ladies Standard=LL4 PT Oval, Unisex=L4 ST Bar, Men’s Standard=U4 Bar, Men’s Premium=M4 SR Bar). R&amp;J “Ladies’ SR” is treated as Ladies Standard.</p>
+</section>
+
+<section class="content-section" aria-labelledby="benefits-title">
+  <div class="section-heading">
+    <div><span class="section-kicker">04 / INCLUDED</span><h2 id="benefits-title">Benefits &amp; policies</h2></div>
+    <p>Compare included services and supplier terms.</p>
+  </div>
+  <div class="scroll"><table id="bm"></table></div>
+  <p class="note"><span class="y">✓</span> Included <span class="legend-separator">·</span> <span class="n">✗</span> Not included <span class="legend-separator">·</span> <span class="u">?</span> Not stated in supplier materials. Prices are subject to change; R&amp;J locks pricing with a 50% down payment.</p>
+</section>
+<footer class="footer">Shoutout Pres EJ Pakanna! Sorry na late ug send pres Hehe.
+    <p>Made by Vinze Lianne</p></footer>
 </div>
 <script src="script.js"></script>
-</body></html>
+</body>
+</html>

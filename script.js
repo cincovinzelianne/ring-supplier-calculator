@@ -1,22 +1,27 @@
 const $ = id => document.getElementById(id);
 const themeToggle = $("themeToggle");
+const systemTheme = matchMedia("(prefers-color-scheme: dark)");
 const savedTheme = localStorage.getItem("theme");
 if (savedTheme === "light" || savedTheme === "dark") {
   document.documentElement.dataset.theme = savedTheme;
 }
 const updateThemeToggle = () => {
   const isDark = document.documentElement.dataset.theme === "dark" ||
-    (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+    (!document.documentElement.dataset.theme && systemTheme.matches);
   themeToggle.textContent = `Switch to ${isDark ? "light" : "dark"} mode`;
   themeToggle.setAttribute("aria-pressed", String(isDark));
+  document.querySelector('meta[name="theme-color"]').content = isDark ? "#141a17" : "#f5f4ef";
 };
 themeToggle.addEventListener("click", () => {
   const isDark = document.documentElement.dataset.theme === "dark" ||
-    (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+    (!document.documentElement.dataset.theme && systemTheme.matches);
   const theme = isDark ? "light" : "dark";
   document.documentElement.dataset.theme = theme;
   localStorage.setItem("theme", theme);
   updateThemeToggle();
+});
+systemTheme.addEventListener("change", () => {
+  if (!document.documentElement.dataset.theme) updateThemeToggle();
 });
 updateThemeToggle();
 const fm = n => "₱" + Math.round(n).toLocaleString();
@@ -56,20 +61,20 @@ function calc() {
   const maxB = Math.max(...ok.map(o => o.ben), 1);
 
   $("res").innerHTML = out.map(o => o.na
-    ? `<div class="card sc"><h3>${o.d.name}</h3><p class="note">Walay ${K}K option.</p></div>`
-    : `<div class="card sc ${o === best ? "best" : ""}">${o === best ? '<span class="badge">Pinaka Lamang</span>' : ""}
-    <h3>${o.d.name}</h3>
-    <div class="note">Net cost sa group</div><div class="big">${fm(o.net)}</div>
+    ? `<article class="card sc"><div class="supplier-heading"><h3>${o.d.name}</h3></div><p class="note">Walay ${K}K option.</p></article>`
+    : `<article class="card sc ${o === best ? "best" : ""}" ${o === best ? 'aria-label="' + o.d.name + ', lowest estimated net cost"' : ""}>
+    <div class="supplier-heading"><h3>${o.d.name}</h3>${o === best ? '<span class="badge">Pinaka Lamang</span>' : ""}</div>
+    <div class="cost-label">Estimated net cost</div><div class="big">${fm(o.net)}</div>
     <div class="row calc"><span>Gold ring / student</span>
       <span class="eq">${o.gp == null ? "N/A" : fm2(o.gp)} × ${G} students availed = <b>${fm2(o.goldTotal)}</b></span></div>
     <div class="row calc"><span>Silver ring / student (Unisex)</span>
       <span class="eq">${fm2(o.sp)} × ${S} students availed = <b>${fm2(o.silverTotal)}</b></span></div>
-    <div class="row"><span><b>Gross total</b></span><b>${fm2(o.gross)}</b></div>
+    <div class="row total-row"><span><b>Gross total</b></span><b>${fm2(o.gross)}</b></div>
     <div class="row"><span>Spot cash discount</span><b class="pos">−${fm(o.disc)}</b></div>
     <div class="row"><span>Donation sa BSC</span><b class="pos">−${fm(o.don)}</b></div>
     <div class="row"><span>Libre nga officer rings</span><b class="pos">−${fm(o.off)}</b></div>
-    <div class="row"><span><b>Total benefits</b></span><b class="pos">${fm(o.ben)}</b></div>
-    <div class="bar"><i style="width:${o.ben / maxB * 100}%"></i></div></div>`).join("");
+    <div class="row total-row"><span><b>Total benefits</b></span><b class="pos">${fm(o.ben)}</b></div>
+    <div class="bar" role="img" aria-label="${o.d.name}: ${Math.round(o.ben / maxB * 100)}% of the highest total benefits"><i style="width:${o.ben / maxB * 100}%"></i></div></article>`).join("");
 
   $("msg").textContent = ok.length > 1
     ? `${best.d.name} ang pinaka-barato: mas ubos og ${fm(worst.net - best.net)} kumpara sa ${worst.d.name}. Ang officer perks (libre nga silver rings) naa lang sa RNP sa mga sheets nga gihatag.`
@@ -80,19 +85,25 @@ let tab = "g";
 [["g","Gold (gipili nga karat)"],["s","Silver"]].forEach(([v, t]) => {
   const b = document.createElement("button");
   b.textContent = t; b.dataset.v = v;
+  b.setAttribute("aria-pressed", String(v === tab));
   b.onclick = () => { tab = v; drawT(); };
   $("tabs").append(b);
 });
+$("tabs").setAttribute("role", "group");
 
 function drawT() {
-  [...$("tabs").children].forEach(b => b.classList.toggle("on", b.dataset.v == tab));
+  [...$("tabs").children].forEach(b => {
+    const selected = b.dataset.v === tab;
+    b.classList.toggle("on", selected);
+    b.setAttribute("aria-pressed", String(selected));
+  });
   const key = tab == "g" ? $("karat").value : "s";
-  $("pt").innerHTML = `<tr><th>Ring type</th>${Object.values(D).map(d => `<th>${d.name}</th>`).join("")}</tr>` +
+  $("pt").innerHTML = `<thead><tr><th scope="col">Ring type</th>${Object.values(D).map(d => `<th scope="col">${d.name}</th>`).join("")}</tr></thead><tbody>` +
     CATS.map(([c, t]) => {
       const v = Object.values(D).map(d => d.p[c][key]);
       const m = Math.min(...v.filter(x => x != null));
-      return `<tr><td>${t}</td>${v.map(x => `<td class="${x === m ? "y" : ""}">${x == null ? "N/A" : fm(x)}</td>`).join("")}</tr>`;
-    }).join("");
+      return `<tr><th scope="row">${t}</th>${v.map(x => `<td class="${x === m ? "best-price" : ""}">${x == null ? "N/A" : fm(x)}</td>`).join("")}</tr>`;
+    }).join("") + "</tbody>";
 }
 
 const Y = '<span class="y">✓</span>', N = '<span class="n">✗</span>', U = '<span class="u">?</span>';
@@ -115,8 +126,8 @@ const rows = [
   ["Down payment (gold / silver)","₱2,000 / ₱1,000","₱1,500 / ₱1,000","50% / ₱1,000"],
   ["Delivery (gold / silver)","30–45 days","45–60 / 30–45 days","45–60 / 30–45 days"]
 ];
-$("bm").innerHTML = `<tr><th>Benefit</th>${Object.values(D).map(d => `<th>${d.name}</th>`).join("")}</tr>` +
-  rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("");
+$("bm").innerHTML = `<thead><tr><th scope="col">Benefit</th>${Object.values(D).map(d => `<th scope="col">${d.name}</th>`).join("")}</tr></thead><tbody>` +
+  rows.map(r => `<tr><th scope="row">${r[0]}</th><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("") + "</tbody>";
 
 document.querySelectorAll("input,select").forEach(e => e.addEventListener("input", () => { calc(); drawT(); }));
 calc(); drawT();
